@@ -35,13 +35,15 @@ python3 tests/check_package.py packages/实际文件名.deb rootless
 python3 tests/check_package.py packages/实际文件名.deb roothide
 ```
 
-SDK 固定16.5、最低15.0、arm64+arm64e；主插件与设置共用 AxsDaFeiYuPetBuild.mk。Rootless 用 theos/theos，RootHide 用 roothide/theos 的真实编译器/头文件/重定位库；不以仅修改 Architecture 冒充 RootHide。资源只从未转换逻辑路径转换一次，Rootless 使用 ROOT_PATH_NS_VAR；RootHide 使用 jbroot()。Rootless 配置在移动用户偏好目录，RootHide 同一逻辑路径经 jbroot 转换；面板是唯一配置写入方。
+SDK 查找目录固定 `iPhoneOS16.5.sdk`，但已实查该 theos/sdks 提供目录的 **SDKSettings.Version=16.4、LC_BUILD_VERSION SDK=16.4.0**，不能把上游目录名当成实际16.5 SDK。最低15.0、arm64+arm64e；主插件与设置共用 AxsDaFeiYuPetBuild.mk。Rootless 用 theos/theos，RootHide 用 roothide/theos 的真实编译器/头文件/重定位库；不以仅修改 Architecture 冒充 RootHide。资源只从未转换逻辑路径转换一次，Rootless 使用 ROOT_PATH_NS_VAR；RootHide 使用 jbroot()。Rootless 配置在移动用户偏好目录，RootHide 同一逻辑路径经 jbroot 转换；面板是唯一配置写入方。
 
 当前 iSH 缺 THEOS/Apple SDK，不能本地证明 Objective-C/Theos 构建。doctor 仅静态诊断且其 selector allowlist 对 UIKit override/NSURLSession delegate 有误报，不能作为编译成功依据。真实 CI 和产物验收见 IMPLEMENTATION.md。
 
 ## GitHub Actions
 
 仅 workflow_dispatch；contents:read；只上传 Artifacts，不自动 push 构建、不创建 Release、不加源、不安装、不注销。两个 matrix job 各自克隆官方对应工具链和SDK，记录工具链/SDK commit、Xcode/clang版本，分别测试/编译/打包/检查 Mach-O arm64e 切片、嵌入签名与480透明帧。当前使用 macos-15-intel：首次实查 macos-14 runner 被平台拒绝后已修正。需要 GitHub Actions 可用额度、受支持macOS runner和访问GitHub/Theos SDK/PyPI/Homebrew的网络；供应链 HEAD 会变化，日志保留实际commit，后续宜固定验证过的commit。
+
+验签使用 `tests/signature_integrity.py` 对每个切片的所有 SHA-1/SHA-256 CodeDirectory 代码页和特殊槽做真实哈希比对，并用篡改代码页负例验证检查器拒绝修改。Theos/ldid 的 CMS 缺省、flags=0 签名会被 macOS `codesign --verify` 报“not signed at all”；这不是 Apple 开发者签名/证书信任验证，不能据此承诺系统信任链或真机加载成功。
 
 ## 手工验收矩阵（全部待真机，不以CI代替）
 

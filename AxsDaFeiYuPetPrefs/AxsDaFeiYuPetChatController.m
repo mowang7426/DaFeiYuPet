@@ -17,12 +17,19 @@ static NSDictionary *axs_dafeiyupet_keyQuery(void) {
 @implementation AxsDaFeiYuPetChatController
 - (void)viewDidLoad {
     [super viewDidLoad]; self.title=@"大肥鱼 · 原生聊天"; self.view.backgroundColor=UIColor.systemBackgroundColor;
+    UIScrollView *scroll=[UIScrollView new]; scroll.translatesAutoresizingMaskIntoConstraints=NO;
+    scroll.keyboardDismissMode=UIScrollViewKeyboardDismissModeInteractive; [self.view addSubview:scroll];
     UIStackView *stack=[UIStackView new]; stack.axis=UILayoutConstraintAxisVertical; stack.spacing=12;
-    stack.translatesAutoresizingMaskIntoConstraints=NO; [self.view addSubview:stack];
-    [NSLayoutConstraint activateConstraints:@[[stack.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor constant:16],
-        [stack.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor constant:-16],
-        [stack.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor constant:12],
-        [stack.bottomAnchor constraintLessThanOrEqualToAnchor:self.view.keyboardLayoutGuide.topAnchor constant:-8]]];
+    stack.translatesAutoresizingMaskIntoConstraints=NO; [scroll addSubview:stack];
+    [NSLayoutConstraint activateConstraints:@[[scroll.leadingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.leadingAnchor],
+        [scroll.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor],
+        [scroll.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor constant:12],
+        [scroll.bottomAnchor constraintEqualToAnchor:self.view.keyboardLayoutGuide.topAnchor constant:-8],
+        [stack.leadingAnchor constraintEqualToAnchor:scroll.contentLayoutGuide.leadingAnchor constant:16],
+        [stack.trailingAnchor constraintEqualToAnchor:scroll.contentLayoutGuide.trailingAnchor constant:-16],
+        [stack.topAnchor constraintEqualToAnchor:scroll.contentLayoutGuide.topAnchor],
+        [stack.bottomAnchor constraintEqualToAnchor:scroll.contentLayoutGuide.bottomAnchor],
+        [stack.widthAnchor constraintEqualToAnchor:scroll.frameLayoutGuide.widthAnchor constant:-32]]];
     UILabel *note=[UILabel new]; note.numberOfLines=0; note.font=[UIFont systemFontOfSize:13];
     note.text=@"仅发送你主动输入的文字给设置中的 HTTPS 服务。无历史、无录音、无屏幕读取；离开本页立即取消。Key 仅存本机 Keychain。"; [stack addArrangedSubview:note];
     UIButton *key=[UIButton buttonWithType:UIButtonTypeSystem]; [key setTitle:@"设置 / 删除 API Key" forState:UIControlStateNormal];

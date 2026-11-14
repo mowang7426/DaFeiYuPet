@@ -38,7 +38,7 @@ jobs:
             git -C "$THEOS" rev-parse HEAD
             git -C "$THEOS" submodule status
             git -C /tmp/dafeiyupet-sdks rev-parse HEAD
-            cat "$THEOS/sdks/iPhoneOS16.5.sdk/SDKSettings.plist"
+            plutil -p "$THEOS/sdks/iPhoneOS16.5.sdk/SDKSettings.plist"
             xcodebuild -version
             xcrun clang --version
           } | tee build/toolchain.txt

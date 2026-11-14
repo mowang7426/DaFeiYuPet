@@ -22,9 +22,17 @@ def slices(path):
         h=struct.unpack_from('<IIIIIIII',data,offset)
         assert h[0]==0xfeedfacf
         cpu,subtype,ncmds=h[1],h[2]&0xffffff,h[4]
-        pos=offset+32; signed=False
+        pos=offset+32; signed=False; deployment=False; loads=[]
         for _ in range(ncmds):
             cmd,size=struct.unpack_from('<II',data,pos); assert size>=8
+            if cmd==0x32:
+                platform,minos,sdk=struct.unpack_from('<III',data,pos+8)
+                assert platform==2 and minos==0x000f0000,('Expected iOS 15.0 minimum',platform,hex(minos))
+                print('LC_BUILD_VERSION min=15.0 SDK=%d.%d.%d'%((sdk>>16)&65535,(sdk>>8)&255,sdk&255))
+                deployment=True
+            if cmd in (0xc,0x8000001c,0xd):
+                rel=struct.unpack_from('<I',data,pos+8)[0]
+                loads.append(data[pos+rel:pos+size].split(b'\0')[0].decode())
             if cmd==0x1d:
                 blob,size2=struct.unpack_from('<II',data,pos+8)
                 assert size2>0 and offset+blob+size2<=len(data)
@@ -40,6 +48,11 @@ def slices(path):
                 signed=True
             pos+=size
         assert signed,'Missing LC_CODE_SIGNATURE or embedded signature'
+        assert deployment,'Missing iOS LC_BUILD_VERSION'
+        if path.suffix=='.dylib':
+            if scheme=='roothide': assert '@loader_path/.jbroot/usr/lib/libroothide.dylib' in loads
+            else: assert '/var/jb/usr/lib' in loads
+        print('Loader paths',loads)
         result.append((cpu,subtype))
     assert (0x100000c,2) in result and (0x100000c,0) in result,('arm64 + arm64e slices required',result)
     return result

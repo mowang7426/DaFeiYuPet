@@ -101,7 +101,8 @@ static BOOL axs_dafeiyupet_locked(void) {
     if(!allow) { [self axs_dafeiyupet_destroy]; return; }
     if(!self.axs_dafeiyupet_window) [self axs_dafeiyupet_create];
     UIWindow *w=self.axs_dafeiyupet_window;
-    if(!CGRectEqualToRect(w.frame,UIScreen.mainScreen.bounds)) { w.frame=UIScreen.mainScreen.bounds; [self axs_dafeiyupet_home]; }
+    CGRect bounds=w.windowScene?w.windowScene.coordinateSpace.bounds:UIScreen.mainScreen.bounds;
+    if(!CGRectEqualToRect(w.frame,bounds)) { w.frame=bounds; [self axs_dafeiyupet_home]; }
     CGFloat size=[self axs_dafeiyupet_number:@"size" fallback:180 low:100 high:300];
     self.axs_dafeiyupet_pet.bounds=CGRectMake(0,0,size,size*124/220);
     self.axs_dafeiyupet_pet.alpha=[self axs_dafeiyupet_number:@"opacity" fallback:1 low:.2 high:1];
@@ -110,7 +111,12 @@ static BOOL axs_dafeiyupet_locked(void) {
     [self axs_dafeiyupet_place];
 }
 - (void)axs_dafeiyupet_create {
-    AxsDaFeiYuPetWindow *w=[[AxsDaFeiYuPetWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
+    UIWindowScene *scene=nil;
+    for(UIScene *candidate in UIApplication.sharedApplication.connectedScenes) {
+        if([candidate isKindOfClass:UIWindowScene.class] && candidate.activationState==UISceneActivationStateForegroundActive) { scene=(UIWindowScene *)candidate; break; }
+    }
+    AxsDaFeiYuPetWindow *w=scene?[[AxsDaFeiYuPetWindow alloc] initWithWindowScene:scene]:[[AxsDaFeiYuPetWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
+    w.frame=scene?scene.coordinateSpace.bounds:UIScreen.mainScreen.bounds;
     w.windowLevel=UIWindowLevelAlert+1; w.backgroundColor=UIColor.clearColor;
     UIViewController *vc=[UIViewController new]; vc.view.backgroundColor=UIColor.clearColor; w.rootViewController=vc;
     UIImageView *pet=[[UIImageView alloc] initWithFrame:CGRectMake(0,0,180,180.*124/220)];
