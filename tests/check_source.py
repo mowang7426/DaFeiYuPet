@@ -10,12 +10,16 @@ p=plistlib.loads((r/'AxsDaFeiYuPetPrefs/Resources/AxsDaFeiYuPetRoot.plist').read
 items={v['key']:v for v in p['items'] if 'key' in v}
 assert items['enabled']['default'] is False and items['roam']['default'] is False
 assert items['size']['default']==180 and items['opacity']['default']==1
+assert items['scope']['default']==1
 assert json.loads(text('tweak.json'))['minimum_ios']=='15.0'
 assert '16.5:15.0' in text('AxsDaFeiYuPetBuild.mk')
 s=text('Sources/AxsDaFeiYuPetController.m')
 assert 'makeKeyAndVisible]' not in s and 'animationImages' not in s.replace('// At most one decode in flight + one displayed image, never UIImageView.animationImages.','')
 assert '[self.axs_dafeiyupet_link invalidate]' in s and 'generation!=' in s and 'if(!allow)' in s
 assert 'return NO;' in text('Sources/AxsDaFeiYuPetConfig.m') or ' : NO;' in text('Sources/AxsDaFeiYuPetConfig.m')
+assert '!axs_dafeiyupet_homeVisible() || axs_dafeiyupet_locked()' in s
+assert 'UIKeyboardWillShowNotification' in s and '!self.axs_dafeiyupet_keyboardVisible' in s
+assert 'initWithWindowScene:scene' in s
 chat=text('AxsDaFeiYuPetPrefs/AxsDaFeiYuPetChatController.m')
 for token in ('kSecAttrAccessibleWhenUnlockedThisDeviceOnly','ephemeralSessionConfiguration','65536','2048','completionHandler(nil)','invalidateAndCancel','35'):
     assert token in chat,token

@@ -24,6 +24,15 @@ static BOOL axs_dafeiyupet_locked(void) {
     BOOL valid=method_getNumberOfArguments(method)==2 && type && (type[0]=='B'||type[0]=='c'); free(type);
     return !valid || ((BOOL(*)(id,SEL))objc_msgSend)(m,s);
 }
+static BOOL axs_dafeiyupet_homeVisible(void) {
+    id app=UIApplication.sharedApplication; SEL selector=NSSelectorFromString(@"_accessibilityFrontMostApplication");
+    Method method=class_getInstanceMethod(object_getClass(app),selector);
+    if(!method || method_getNumberOfArguments(method)!=2) return NO;
+    char *type=method_copyReturnType(method); BOOL valid=type && type[0]=='@'; free(type);
+    if(!valid || ![app respondsToSelector:selector]) return NO;
+    id front=axs_dafeiyupet_object(app,@"_accessibilityFrontMostApplication");
+    return !front || [axs_dafeiyupet_object(front,@"bundleIdentifier") isEqual:@"com.apple.springboard"];
+}
 @interface AxsDaFeiYuPetWindow : UIWindow
 @property(nonatomic,weak) UIView *axs_dafeiyupet_pet;
 @end
@@ -31,7 +40,7 @@ static BOOL axs_dafeiyupet_locked(void) {
 - (BOOL)canBecomeKeyWindow { return NO; }
 - (UIView *)hitTest:(CGPoint)p withEvent:(UIEvent *)event {
     UIView *pet=self.axs_dafeiyupet_pet;
-    if(self.hidden || pet.hidden || !CGRectContainsPoint(pet.frame,p)) return nil;
+    if(self.hidden || pet.hidden || !axs_dafeiyupet_homeVisible() || axs_dafeiyupet_locked() || !CGRectContainsPoint(pet.frame,p)) return nil;
     // Only the character body catches touches; transparent margins pass through.
     CGPoint q=[pet convertPoint:p fromView:self];
     CGRect body=CGRectInset(pet.bounds,pet.bounds.size.width*.30,pet.bounds.size.height*.05);
@@ -51,7 +60,7 @@ static BOOL axs_dafeiyupet_locked(void) {
 @property(nonatomic,copy) NSDictionary *axs_dafeiyupet_manifest;
 @property(nonatomic,copy) NSString *axs_dafeiyupet_action;
 @property(nonatomic) NSUInteger axs_dafeiyupet_frame, axs_dafeiyupet_generation;
-@property(nonatomic) BOOL axs_dafeiyupet_loading, axs_dafeiyupet_dragging, axs_dafeiyupet_flying;
+@property(nonatomic) BOOL axs_dafeiyupet_loading, axs_dafeiyupet_dragging, axs_dafeiyupet_flying, axs_dafeiyupet_keyboardVisible;
 @property(nonatomic) CFTimeInterval axs_dafeiyupet_last, axs_dafeiyupet_frameTime, axs_dafeiyupet_idleTime, axs_dafeiyupet_bubbleUntil;
 @property(nonatomic) double axs_dafeiyupet_reset;
 @end
@@ -63,6 +72,8 @@ static BOOL axs_dafeiyupet_locked(void) {
     self.axs_dafeiyupet_manifest=[NSDictionary dictionaryWithContentsOfFile:p];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(axs_dafeiyupet_refresh) name:AxsDaFeiYuPetPreferencesChanged object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(axs_dafeiyupet_refresh) name:UIApplicationDidBecomeActiveNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(axs_dafeiyupet_keyboardShow:) name:UIKeyboardWillShowNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(axs_dafeiyupet_keyboardHide:) name:UIKeyboardDidHideNotification object:nil];
     __weak typeof(self) weakSelf=self;
     notify_register_dispatch("com.apple.springboard.lockstate",&_axs_dafeiyupet_lockToken,dispatch_get_main_queue(),^(int token){
         [weakSelf axs_dafeiyupet_destroy];
@@ -88,16 +99,13 @@ static BOOL axs_dafeiyupet_locked(void) {
     }
     [self axs_dafeiyupet_visibility];
 }
+- (void)axs_dafeiyupet_keyboardShow:(NSNotification *)note { self.axs_dafeiyupet_keyboardVisible=YES; [self axs_dafeiyupet_destroy]; }
+- (void)axs_dafeiyupet_keyboardHide:(NSNotification *)note { self.axs_dafeiyupet_keyboardVisible=NO; [self axs_dafeiyupet_refresh]; }
 - (void)axs_dafeiyupet_visibility {
     BOOL locked=axs_dafeiyupet_locked();
-    NSInteger scope=(NSInteger)[self axs_dafeiyupet_number:@"scope" fallback:0 low:0 high:1];
-    BOOL allow=!locked; // Lock-screen content is deliberately never shown in preview.
-    if(scope==1) {
-        id app=axs_dafeiyupet_object(UIApplication.sharedApplication,@"_accessibilityFrontMostApplication");
-        NSString *bid=axs_dafeiyupet_object(app,@"bundleIdentifier");
-        BOOL selectorKnown=[UIApplication.sharedApplication respondsToSelector:NSSelectorFromString(@"_accessibilityFrontMostApplication")];
-        allow=allow && selectorKnown && (!app || [bid isEqual:@"com.apple.springboard"]);
-    }
+    NSInteger scope=(NSInteger)[self axs_dafeiyupet_number:@"scope" fallback:1 low:0 high:1];
+    BOOL allow=!locked && !self.axs_dafeiyupet_keyboardVisible;
+    if(scope==1) allow=allow && axs_dafeiyupet_homeVisible();
     if(!allow) { [self axs_dafeiyupet_destroy]; return; }
     if(!self.axs_dafeiyupet_window) [self axs_dafeiyupet_create];
     UIWindow *w=self.axs_dafeiyupet_window;

@@ -12,7 +12,7 @@
 			<key>label</key>
 			<string>0.1.0 预览</string>
 			<key>footerText</key>
-			<string>默认关闭。锁屏始终隐藏；宠物以外触摸穿透。四种透明动作，画质为220×124预览级。</string>
+			<string>默认关闭、仅主屏幕。锁屏/本地键盘隐藏；覆盖前台App时宠物也完全触摸穿透，互动仅在桌面。四种透明动作，画质220×124预览级。</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -108,7 +108,7 @@
 			<key>defaults</key>
 			<string>com.axs.dafeiyupet</string>
 			<key>default</key>
-			<integer>0</integer>
+			<integer>1</integer>
 			<key>validTitles</key>
 			<array>
 				<string>主屏幕与前台App（待真机验收）</string>
