@@ -1,0 +1,42 @@
+{
+  "idle": {
+    "source": "daiji-huxi-xiuxian.gif",
+    "sha256": "ab23562dafea476fd136909e4405b90150c7e9434a9e9d2ed4cb73d9f33ddce9",
+    "frames": 120,
+    "size": [
+      220,
+      124
+    ],
+    "alpha": "per-frame verified 0..255; GIF binary alpha, not HEVC"
+  },
+  "look": {
+    "source": "dongzhangxiwang.gif",
+    "sha256": "b0488b4eb7068526191abcbda3e4e5453931b672a898ee953489e9d0b2cd3c45",
+    "frames": 120,
+    "size": [
+      220,
+      124
+    ],
+    "alpha": "per-frame verified 0..255; GIF binary alpha, not HEVC"
+  },
+  "tap": {
+    "source": "dianji-huiying-yuanqi-huishou.gif",
+    "sha256": "36daf6048b3038504d7dbe413545ad08f518cd723d2e1a7e828861818694975b",
+    "frames": 120,
+    "size": [
+      220,
+      124
+    ],
+    "alpha": "per-frame verified 0..255; GIF binary alpha, not HEVC"
+  },
+  "drag": {
+    "source": "beishubiao-tuozhuai-xuankong-fankui.gif",
+    "sha256": "0bb3db0356490ae264d5278b977c432099b8d5e253e59bcd69e1fee313230caf",
+    "frames": 120,
+    "size": [
+      220,
+      124
+    ],
+    "alpha": "per-frame verified 0..255; GIF binary alpha, not HEVC"
+  }
+}

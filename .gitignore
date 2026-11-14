@@ -1,0 +1,6 @@
+.theos/
+packages/
+build/
+.DS_Store
+*.deb
+__pycache__/

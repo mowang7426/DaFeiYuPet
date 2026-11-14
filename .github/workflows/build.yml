@@ -1,0 +1,74 @@
+name: DaFeiYuPet preview build
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: macos-14
+    strategy:
+      fail-fast: false
+      matrix:
+        scheme: [rootless, roothide]
+    env:
+      THEOS: /tmp/dafeiyupet-theos
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build dependencies
+        run: |
+          brew install ldid dpkg
+          python3 -m venv /tmp/dafeiyupet-venv
+          /tmp/dafeiyupet-venv/bin/pip install Pillow
+          echo /tmp/dafeiyupet-venv/bin >> "$GITHUB_PATH"
+      - name: Independent toolchain and SDK
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build
+          if [ '${{ matrix.scheme }}' = roothide ]; then
+            url=https://github.com/roothide/theos.git
+          else
+            url=https://github.com/theos/theos.git
+          fi
+          git clone --recursive --depth 1 "$url" "$THEOS"
+          git clone --depth 1 https://github.com/theos/sdks.git /tmp/dafeiyupet-sdks
+          cp -R /tmp/dafeiyupet-sdks/iPhoneOS16.5.sdk "$THEOS/sdks/"
+          {
+            echo "scheme=${{ matrix.scheme }} source=$url"
+            git -C "$THEOS" rev-parse HEAD
+            git -C "$THEOS" submodule status
+            git -C /tmp/dafeiyupet-sdks rev-parse HEAD
+            cat "$THEOS/sdks/iPhoneOS16.5.sdk/SDKSettings.plist"
+            xcodebuild -version
+            xcrun clang --version
+          } | tee build/toolchain.txt
+      - name: Host tests and static contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          cc -Wall -Wextra -Werror tests/Physics.c -lm -o /tmp/dafeiyupet-physics
+          /tmp/dafeiyupet-physics | tee build/physics.txt
+          python3 tests/check_source.py | tee build/contracts.txt
+      - name: Compile and package
+        shell: bash
+        run: |
+          set -euo pipefail
+          sh build.sh '${{ matrix.scheme }}' 2>&1 | tee build/compile.txt
+      - name: Validate actual package
+        shell: bash
+        run: |
+          set -euo pipefail
+          for deb in packages/*.deb; do
+            python3 tests/check_package.py "$deb" '${{ matrix.scheme }}'
+            dpkg-deb -c "$deb"
+          done 2>&1 | tee build/package-check.txt
+          shasum -a 256 packages/*.deb > build/SHA256SUMS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: DaFeiYuPet-0.1.0-${{ matrix.scheme }}
+          path: |
+            packages/*.deb
+            build/*.txt
+            build/SHA256SUMS
+          if-no-files-found: error

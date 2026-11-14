@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "name": "DaFeiYuPet",
+  "id": "dafeiyupet",
+  "display_name": "大肥鱼",
+  "class_prefix": "AxsDaFeiYuPet",
+  "symbol_prefix": "axs_dafeiyupet",
+  "package": "com.axs.dafeiyupet",
+  "bundle": "com.apple.springboard",
+  "sdk_version": "16.5",
+  "minimum_ios": "15.0",
+  "preferences": true,
+  "slider": false,
+  "github_actions": false
+}

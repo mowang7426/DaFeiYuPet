@@ -1,0 +1,9 @@
+Package: com.axs.dafeiyupet
+Name: 大肥鱼
+Version: 0.1.0
+Architecture: iphoneos-arm
+Description: Native desktop pet preview; non-commercial artwork; iOS 15-17 target
+Maintainer: Axs
+Author: Axs
+Section: Tweaks
+Depends: mobilesubstrate, preferenceloader, firmware (>= 15.0)
