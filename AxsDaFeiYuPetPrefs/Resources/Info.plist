@@ -6,8 +6,8 @@
     <key>CFBundleIdentifier</key><string>com.axs.dafeiyupet.preferences</string>
     <key>CFBundleName</key><string>大肥鱼</string>
     <key>CFBundlePackageType</key><string>BNDL</string>
-    <key>CFBundleShortVersionString</key><string>5.2.0</string>
-    <key>CFBundleVersion</key><string>5.2.0</string>
+    <key>CFBundleShortVersionString</key><string>0.1.0</string>
+    <key>CFBundleVersion</key><string>0.1.0</string>
     <key>NSPrincipalClass</key><string>AxsDaFeiYuPetRootListController</string>
 </dict>
 </plist>

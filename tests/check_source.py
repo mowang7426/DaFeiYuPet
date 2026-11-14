@@ -11,6 +11,8 @@ items={v['key']:v for v in p['items'] if 'key' in v}
 assert items['enabled']['default'] is False and items['roam']['default'] is False
 assert items['size']['default']==180 and items['opacity']['default']==1
 assert items['scope']['default']==1
+info=plistlib.loads((r/'AxsDaFeiYuPetPrefs/Resources/Info.plist').read_bytes())
+assert info['CFBundleShortVersionString']=='0.1.0' and info['CFBundleVersion']=='0.1.0'
 assert json.loads(text('tweak.json'))['minimum_ios']=='15.0'
 assert '16.5:15.0' in text('AxsDaFeiYuPetBuild.mk')
 s=text('Sources/AxsDaFeiYuPetController.m')

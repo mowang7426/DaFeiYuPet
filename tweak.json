@@ -11,5 +11,5 @@
   "minimum_ios": "15.0",
   "preferences": true,
   "slider": false,
-  "github_actions": false
+  "github_actions": true
 }
