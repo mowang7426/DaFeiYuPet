@@ -72,7 +72,7 @@ static NSDictionary *axs_dafeiyupet_keyQuery(void) {
     NSString *base=[cfg[@"aiURL"] isKindOfClass:NSString.class]?cfg[@"aiURL"]:@"https://api.openai.com/v1";
     NSString *model=[cfg[@"aiModel"] isKindOfClass:NSString.class]?cfg[@"aiModel"]:@"gpt-4o-mini";
     NSURLComponents *c=[NSURLComponents componentsWithString:base];
-    if(![c.scheme.lowercaseString isEqual:@"https"] || !c.host.length || c.user || c.password || c.query || c.fragment || model.length>128) { self.axs_dafeiyupet_status.text=@"请配置合法HTTPS Base URL与模型"; return; }
+    if(![c.scheme.lowercaseString isEqual:@"https"] || !c.host.length || !c.URL || base.length>2048 || c.user || c.password || c.query || c.fragment || !model.length || model.length>128) { self.axs_dafeiyupet_status.text=@"请配置合法HTTPS Base URL与模型"; return; }
     NSString *text=self.axs_dafeiyupet_input.text;
     if(!text.length || text.length>2048) { self.axs_dafeiyupet_status.text=@"输入须为1–2048字符"; return; }
     while([c.path hasSuffix:@"/"]) c.path=[c.path substringToIndex:c.path.length-1];

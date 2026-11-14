@@ -5,6 +5,7 @@
 #import <objc/message.h>
 #import <objc/runtime.h>
 #import <QuartzCore/QuartzCore.h>
+#import <notify.h>
 
 // Checked object-returning zero-argument selectors only; unknown state fails closed.
 static id axs_dafeiyupet_object(id obj, NSString *name) {
@@ -39,6 +40,7 @@ static BOOL axs_dafeiyupet_locked(void) {
 @end
 @interface AxsDaFeiYuPetController () {
     AxsDaFeiYuPetBody _axs_dafeiyupet_body;
+    int _axs_dafeiyupet_lockToken;
 }
 @property(nonatomic,strong) AxsDaFeiYuPetWindow *axs_dafeiyupet_window;
 @property(nonatomic,strong) UIImageView *axs_dafeiyupet_pet;
@@ -61,6 +63,11 @@ static BOOL axs_dafeiyupet_locked(void) {
     self.axs_dafeiyupet_manifest=[NSDictionary dictionaryWithContentsOfFile:p];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(axs_dafeiyupet_refresh) name:AxsDaFeiYuPetPreferencesChanged object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(axs_dafeiyupet_refresh) name:UIApplicationDidBecomeActiveNotification object:nil];
+    __weak typeof(self) weakSelf=self;
+    notify_register_dispatch("com.apple.springboard.lockstate",&_axs_dafeiyupet_lockToken,dispatch_get_main_queue(),^(int token){
+        [weakSelf axs_dafeiyupet_destroy];
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW,NSEC_PER_SEC/5),dispatch_get_main_queue(),^{ [weakSelf axs_dafeiyupet_refresh]; });
+    });
     [self axs_dafeiyupet_refresh];
 }
 - (double)axs_dafeiyupet_number:(NSString *)key fallback:(double)fallback low:(double)low high:(double)high {

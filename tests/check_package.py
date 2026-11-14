@@ -3,6 +3,7 @@
 from pathlib import Path
 import subprocess, tempfile, sys, struct, plistlib, hashlib, json
 from PIL import Image
+from signature_integrity import axs_dafeiyupet_verify_signature
 package=Path(sys.argv[1]).resolve(); scheme=sys.argv[2]
 def run(*args): return subprocess.check_output(args,text=True).strip()
 meta=run('dpkg-deb','-f',str(package)); print(meta)
@@ -28,11 +29,19 @@ def slices(path):
                 blob,size2=struct.unpack_from('<II',data,pos+8)
                 assert size2>0 and offset+blob+size2<=len(data)
                 assert struct.unpack_from('>I',data,offset+blob)[0]==0xfade0cc0
+                info=path.parent/'Info.plist'
+                info_bytes=info.read_bytes() if info.exists() else None
+                print('Verified ldid CodeDirectories',axs_dafeiyupet_verify_signature(data,offset,blob,size2,info_bytes))
+                tampered=bytearray(data); tampered[offset+256]^=1
+                try:
+                    axs_dafeiyupet_verify_signature(tampered,offset,blob,size2,info_bytes)
+                except AssertionError: pass
+                else: raise AssertionError('Signature verification failed to reject altered code')
                 signed=True
             pos+=size
         assert signed,'Missing LC_CODE_SIGNATURE or embedded signature'
         result.append((cpu,subtype))
-    assert (0x100000c,2) in result,('arm64e slice required',result)
+    assert (0x100000c,2) in result and (0x100000c,0) in result,('arm64 + arm64e slices required',result)
     return result
 with tempfile.TemporaryDirectory() as t:
     root=Path(t); subprocess.run(['dpkg-deb','-x',str(package),t],check=True)
@@ -41,8 +50,6 @@ with tempfile.TemporaryDirectory() as t:
     assert len(binaries)==2
     for b in binaries:
         print(b.relative_to(root),slices(b))
-        if sys.platform=='darwin':
-            subprocess.run(['codesign','--verify','--verbose=2',str(b)],check=True)
     plists=list(root.rglob('DynamicLibraries/AxsDaFeiYuPet.plist')); assert len(plists)==1
     assert plistlib.loads(plists[0].read_bytes())['Filter']['Bundles']==['com.apple.springboard']
     manifests=list(root.rglob('AxsDaFeiYuPet/manifest.plist')); assert len(manifests)==1
